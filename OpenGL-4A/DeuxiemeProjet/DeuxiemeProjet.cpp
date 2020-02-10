@@ -188,7 +188,7 @@ void Display(GLFWwindow* window)
 	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	Vector3 cameraPos = Vector3(0.0f, 0.0f, 1.0f);
+	Vector3 cameraPos = Vector3(0.0f, 0.0f, 10.0f);
 	Vector3 cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
 	Vector3 cameraUp = Vector3(0.0f, 1.0f, 0.0f);
 
@@ -213,19 +213,19 @@ void Display(GLFWwindow* window)
 		1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 1.0f
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
 
 	float aspect = width / height;
-	float fovy = 60 * (M_PI / 180);
+	float fovy = 100 * (M_PI / 180);
 	float f = 1 / tan(fovy / 2);
 	float far = 1000.0;
-	float near = 0.3;
+	float near = 5.0;
 
 	float projMatrice[] = {
 		f / aspect,		0.0,	0.0,						0.0,
 		0.0,			f,		0.0,						0.0,
-		0.0,			0.0,	(far + near)/(near-far),	(2* near * far)/ (near - far),
+		0.0,			0.0,	-far/(near-far),	-(near * far)/ (near - far),
 		0.0,			0.0,	-1.0,						0.0,
 	};
 
