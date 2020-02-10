@@ -32,7 +32,11 @@
 #elif defined(__linux__)
 #endif
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <iostream>
+using namespace std;
+
 #include "GLShader.h"
 #include "VertexCustomClass.h"
 #include "MeshCustomClass.h"
@@ -95,14 +99,10 @@ void Initialize()
 	glVertexAttribPointer(text_coord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _textcoords));
 	glEnableVertexAttribArray(text_coord_loc);
 
-	glGenBuffers(2, &VBO_DIFFUSE);
+	glGenBuffers(1, &VBO_DIFFUSE);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_DIFFUSE);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex), diffuseLightVertex, GL_STATIC_DRAW);
-
-	int diffuse_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_diffuse_position");
-	glVertexAttribPointer(diffuse_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _position));
-	glEnableVertexAttribArray(diffuse_loc);
 
 	int diffuse_color_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_diffuse_color");
 	glVertexAttribPointer(diffuse_color_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _color));
@@ -119,10 +119,65 @@ void Shutdown()
 {
 	BasicShader.Destroy();
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(2, &VBO_DIFFUSE);
+	glDeleteBuffers(1, &VBO_DIFFUSE);
 	glDeleteBuffers(1, &IBO);
 	glDeleteVertexArrays(1, &VAO);
 
+}
+
+float DotProduct(Vector3 vector1, Vector3 vector2) {
+	int product = (vector1._x * vector2._x) + (vector1._y * vector2._y) + (vector1._z * vector2._z);
+	return product;
+}
+
+Vector3 CrossProduct(Vector3 vector1, Vector3 vector2) {
+	Vector3 cross;
+
+	cross._x = vector1._y * vector2._z - vector1._z * vector2._y;
+	cross._y = vector1._x * vector2._z - vector1._z * vector2._x;
+	cross._z = vector1._x * vector2._y - vector1._y * vector2._x;
+
+	return cross;
+}
+
+Vector3 Normalize(Vector3 vec)
+{
+	Vector3 norm;
+	float length = sqrt((vec._x * vec._x) + (vec._y * vec._y) + (vec._z * vec._z));
+
+	norm._x = vec._x / length;
+	norm._y = vec._y / length;
+	norm._z = vec._z / length;
+	
+	return norm;
+}
+
+float *LookAt(Vector3 position, Vector3 target, Vector3 up) {
+	Vector3 camForward;
+	camForward._x = position._x - target._x;
+	camForward._y = position._y - target._y;
+	camForward._z = position._z - target._z;
+
+	camForward = Normalize(camForward);
+
+	Vector3 camRight = CrossProduct(up, camForward);
+
+	camRight = Normalize(camRight);
+
+	Vector3 camUp = CrossProduct(camForward, camRight);
+
+	float scalePositionUp = DotProduct(position, camUp);
+	float scalePositionFront = DotProduct(position, camForward);
+	float scalePositionRight = DotProduct(position, camRight);
+
+	float matrice[] = {
+		camRight._x,	camRight._y,	camRight._z,	-scalePositionRight,
+		camUp._x,		camUp._y,		camUp._z,		-scalePositionUp,
+		camForward._x,	camForward._y,	camForward._z,	-scalePositionFront,
+		0.0f,			0.0f,			0.0f,			1.0f
+	};
+
+	return matrice;
 }
 
 void Display(GLFWwindow* window)
@@ -133,11 +188,16 @@ void Display(GLFWwindow* window)
 	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	Vector3 cameraPos = Vector3(0.0f, 0.0f, 10.0f);
+	Vector3 cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
+	Vector3 cameraUp = Vector3(0.0f, 1.0f, 0.0f);
+
+	float *viewMatrice = LookAt(cameraPos, cameraTarget, cameraUp);
+
 	// Desactive le "scissoring"
 	glDisable(GL_SCISSOR_TEST);
 	// Definit le viewport en pleine fenetre
 	glViewport(0, 0, width, height);
-	
 	uint32_t basicProgram = BasicShader.GetProgram();
 	glUseProgram(basicProgram);
 
@@ -153,10 +213,30 @@ void Display(GLFWwindow* window)
 		1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 1.0f
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
+
+	float aspect = width / height;
+	float fovy = 100 * (M_PI / 180);
+	float f = 1 / tan(fovy / 2);
+	float far = 1000.0;
+	float near = 5.0;
+
+	float projMatrice[] = {
+		f / aspect,		0.0,	0.0,						0.0,
+		0.0,			f,		0.0,						0.0,
+		0.0,			0.0,	-far/(near-far),	-(near * far)/ (near - far),
+		0.0,			0.0,	-1.0,						0.0,
+	};
+
 	int matrice_loc = glGetUniformLocation(basicProgram, "u_matrix");
 	glUniformMatrix4fv(matrice_loc, 1, GL_FALSE, matrice);
+
+	int matriceViewLoc = glGetUniformLocation(basicProgram, "u_view_matrix");
+	glUniformMatrix4fv(matriceViewLoc, 1, GL_FALSE, viewMatrice);
+
+	int matriceProjLoc = glGetUniformLocation(basicProgram, "u_projection_matrix");
+	glUniformMatrix4fv(matriceProjLoc, 1, GL_FALSE, projMatrice);
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
