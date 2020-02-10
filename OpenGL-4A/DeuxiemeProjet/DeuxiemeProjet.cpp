@@ -8,9 +8,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "ViewerObj.h"
-#include "stb.h"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 // les repertoires d'includes sont:
 // ../libs/glfw-3.3/include			fenetrage
 // ../libs/glew-2.1.0/include		extensions OpenGL
@@ -44,6 +45,7 @@ GLuint VBO;
 GLuint IBO;
 GLuint VAO;
 Mesh m;
+unsigned int texID;
 
 void Initialize()
 {
@@ -64,6 +66,25 @@ void Initialize()
 
 	ViewerObj viewer;
 	viewer.LoadObj(m);
+
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	int width, height, comp;
+	uint8_t* data = stbi_load("container.jpg", &width, &height, &comp, STBI_rgb_alpha);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(data);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -88,26 +109,6 @@ void Initialize()
 	glVertexAttribPointer(text_coord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _textcoords));
 	glEnableVertexAttribArray(text_coord_loc);
 
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height, nbChannels;
-	unsigned char* data = stbi_load("container.jpg", &width, &height, &nbChannels, 0);
-	if (true) {
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	//stbi_image_free(data);
-
 	glBindVertexArray(0);
 #ifdef WIN32
 	wglSwapIntervalEXT(1);
@@ -121,6 +122,7 @@ void Shutdown()
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &IBO);
 	glDeleteVertexArrays(1, &VAO);
+	glDeleteTextures(1, &texID);
 
 }
 
@@ -157,6 +159,12 @@ void Display(GLFWwindow* window)
 	int matrice_loc = glGetUniformLocation(basicProgram, "u_matrix");
 	glUniformMatrix4fv(matrice_loc, 1, GL_FALSE, matrice);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	/*int locationTexture = glActiveTexture(basicProgram, "u_sampler");
+	glUniform1i(locationTexture, 1);
+	*/
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	glDrawArrays(GL_TRIANGLES, 0, m.getVertexCount());

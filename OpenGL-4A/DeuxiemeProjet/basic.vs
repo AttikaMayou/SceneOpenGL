@@ -14,9 +14,12 @@ varying vec2 v_text_coord;
 
 varying float v_ambient_intensity;
 
+uniform sampler2D u_sampler;
+
 void main(void) {
 	gl_Position = u_matrix * vec4(a_position, 1.0);
-	v_color = vec4(a_color, 1.0);
+	vec4 color = texture2D(u_sampler, v_text_coord);
+	v_color = vec4(color, 1.0);
 
 	v_normal = a_normal;
 	v_ambient_intensity = u_ambient_intensity;
