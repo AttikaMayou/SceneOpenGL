@@ -187,8 +187,9 @@ void Display(GLFWwindow* window)
 
 	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glCullFace(GL_BACK);
 
-	Vector3 cameraPos = Vector3(0.0f, 0.0f, 10.0f);
+	Vector3 cameraPos = Vector3(0.0f, 0.0f, 2.0f);
 	Vector3 cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
 	Vector3 cameraUp = Vector3(0.0f, 1.0f, 0.0f);
 
@@ -219,8 +220,8 @@ void Display(GLFWwindow* window)
 	float aspect = width / height;
 	float fovy = 100 * (M_PI / 180);
 	float f = 1 / tan(fovy / 2);
-	float far = 1000.0;
-	float near = 5.0;
+	float far = 100.0;
+	float near = 1.0;
 
 	float projMatrice[] = {
 		f / aspect,		0.0,	0.0,						0.0,
@@ -230,13 +231,13 @@ void Display(GLFWwindow* window)
 	};
 
 	int matrice_loc = glGetUniformLocation(basicProgram, "u_matrix");
-	glUniformMatrix4fv(matrice_loc, 1, GL_FALSE, matrice);
+	glUniformMatrix4fv(matrice_loc, 1, GL_TRUE, matrice);
 
 	int matriceViewLoc = glGetUniformLocation(basicProgram, "u_view_matrix");
-	glUniformMatrix4fv(matriceViewLoc, 1, GL_FALSE, viewMatrice);
+	glUniformMatrix4fv(matriceViewLoc, 1, GL_TRUE, viewMatrice);
 
 	int matriceProjLoc = glGetUniformLocation(basicProgram, "u_projection_matrix");
-	glUniformMatrix4fv(matriceProjLoc, 1, GL_FALSE, projMatrice);
+	glUniformMatrix4fv(matriceProjLoc, 1, GL_TRUE, projMatrice);
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
