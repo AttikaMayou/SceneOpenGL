@@ -10,6 +10,7 @@ struct Vertex
 
 public:
 	Vector3 _position;
+	Vector3 _color;
 	Vector3 _normal;
 	Vector2 _textcoords;
 	Vertex();

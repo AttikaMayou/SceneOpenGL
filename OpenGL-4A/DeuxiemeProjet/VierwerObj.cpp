@@ -1,3 +1,6 @@
+#include <iostream>
+using namespace std;
+
 #include "tiny_obj_loader.h"
 
 #include "ViewerObj.h"
@@ -56,11 +59,12 @@ void ViewerObj::LoadObj(Mesh &mesh) {
                      vertex._textcoords._x = attrib.texcoords[2 * idx.texcoord_index + 0];
                      vertex._textcoords._y = attrib.texcoords[2 * idx.texcoord_index + 1];
                  }
+
+				 vertex._color._x = attrib.colors[3 * idx.vertex_index + 0];
+				 vertex._color._y = attrib.colors[3 * idx.vertex_index + 1];
+				 vertex._color._z = attrib.colors[3 * idx.vertex_index + 2];
+				 
                  mesh.addVertex(vertex);
-                // Optional: vertex colors
-                // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
-                // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
-                // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
             }
             index_offset += fv;
 

@@ -69,9 +69,22 @@ void Initialize()
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m.getVertexCount(), m.getVertices(), GL_STATIC_DRAW);
+
 	int loc_position = glGetAttribLocation(BasicShader.GetProgram(), "a_position");
-	glVertexAttribPointer(loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0/*offsetof(Vertex, _position)*/);
+	glVertexAttribPointer(loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _position));
 	glEnableVertexAttribArray(loc_position);
+
+	int color_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_color");
+	glVertexAttribPointer(color_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _color));
+	glEnableVertexAttribArray(color_loc);
+
+	int normal_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_normal");
+	glVertexAttribPointer(normal_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _normal));
+	glEnableVertexAttribArray(normal_loc);
+
+	int text_coord_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_text_coord");
+	glVertexAttribPointer(text_coord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _textcoords));
+	glEnableVertexAttribArray(text_coord_loc);
 
 	glBindVertexArray(0);
 #ifdef WIN32
@@ -106,8 +119,12 @@ void Display(GLFWwindow* window)
 	glUseProgram(basicProgram);
 
 	float currentTime = (float)glfwGetTime();
-	int time_loc = glGetUniformLocation(BasicShader.GetProgram(), "u_time");
+	int time_loc = glGetUniformLocation(basicProgram, "u_time");
 	glUniform1f(time_loc, currentTime);
+
+	float intensity = 0.1;
+	int intensity_loc = glGetUniformLocation(basicProgram, "u_ambient_intensity");
+	glUniform1f(intensity_loc, intensity);
 
 	float matrice[] = { 
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -115,7 +132,7 @@ void Display(GLFWwindow* window)
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 1.0f
 	};
-	int matrice_loc = glGetUniformLocation(BasicShader.GetProgram(), "u_matrix");
+	int matrice_loc = glGetUniformLocation(basicProgram, "u_matrix");
 	glUniformMatrix4fv(matrice_loc, 1, GL_FALSE, matrice);
 
 	glBindVertexArray(VAO);
