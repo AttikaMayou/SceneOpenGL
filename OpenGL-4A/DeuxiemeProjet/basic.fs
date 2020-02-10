@@ -23,7 +23,7 @@ void main(void) {
 	// With diffuseColor
 	//gl_FragColor = vec4((ambient + diffuse) * v_color, 1.0);
 
-	vec3 eyes = vec3(0.0, 0.0, 1.0);
+	vec3 eyes = vec3(0.0, 0.0, 2.0);
 	vec3 eyeDirection = normalize(eyes - v_frag_pos);
 	vec3 reflexionDirection = reflect(-lightDirection, newNormal);
 	
@@ -33,10 +33,4 @@ void main(void) {
 	vec3 specular = spec * specular_intensity * specColor;
 
 	gl_FragColor = vec4((ambient + diffuse + specular) * v_color, 1.0);
-}
-
-vec3 diffuse(vec3 N, vec3 L) {
-	vec3 direction = vec3(1.0, 1.0, 1.0);
-
-	return direction;
 }

@@ -51,22 +51,18 @@ void main(void) {
 	float angleByTime = (int)(u_time * 100) % (360 * 100);
 
 	mat4 matrixRot = rotationMatrix(axisRot, angleByTime/100);
-	mat4 matrixTrans = translationMatrix(axisTrans, 10);
 	mat4 newMatrix = u_matrix * matrixRot;
 
 	gl_Position = u_projection_matrix * u_view_matrix * newMatrix * vec4(a_position, 1.0);
 	v_color = a_color;
 
-	v_normal = a_normal;
+	v_normal = mat3(transpose(inverse(u_matrix))) * a_normal;
 	v_ambient_intensity = u_ambient_intensity;
 	v_text_coord = a_text_coord;
 
-	//v_diffuse_light_position = a_diffuse_position;
-	//v_diffuse_light_color = a_diffuse_color;
 	v_diffuse_light_color = vec3(1.0, 0.0, 0.0);
-
-	vec3 newPos = (a_position.x, a_position.y, a_position.z - 1);
-	v_diffuse_light_position = u_projection_matrix * u_view_matrix * u_matrix * vec4(a_position, 1.0);
+	// Nous sommes sincèrement désolé mais on avait pas vu
+	v_diffuse_light_position = vec3(0.0, 0.0, -cos(u_time));
 
 	v_frag_pos = vec3(u_matrix * vec4(a_position, 1.0));
 }

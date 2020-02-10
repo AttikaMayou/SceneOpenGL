@@ -186,8 +186,12 @@ void Display(GLFWwindow* window)
 	glfwGetWindowSize(window, &width, &height);
 
 	glClearColor(0.f, 0.f, 0.f, 0.f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glCullFace(GL_BACK);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glCullFace(GL_FRONT);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 
 	Vector3 cameraPos = Vector3(0.0f, 0.0f, 2.0f);
 	Vector3 cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
@@ -224,10 +228,10 @@ void Display(GLFWwindow* window)
 	float near = 1.0;
 
 	float projMatrice[] = {
-		f / aspect,		0.0,	0.0,						0.0,
-		0.0,			f,		0.0,						0.0,
+		f / aspect,		0.0,	0.0,				0.0,
+		0.0,			f,		0.0,				0.0,
 		0.0,			0.0,	-far/(near-far),	-(near * far)/ (near - far),
-		0.0,			0.0,	-1.0,						0.0,
+		0.0,			0.0,	-1.0,				0.0,
 	};
 
 	int matrice_loc = glGetUniformLocation(basicProgram, "u_matrix");
