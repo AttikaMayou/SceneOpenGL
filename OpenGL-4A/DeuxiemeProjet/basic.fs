@@ -7,7 +7,7 @@ varying vec3 v_diffuse_light_position;
 varying vec3 v_diffuse_light_color;
 varying vec3 v_frag_pos;
 
-uniform sampled2D u_texture_sampler;
+uniform sampler2D u_texture_sampler;
 
 void main(void) {
 	// With ambien intensity

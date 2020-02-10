@@ -68,6 +68,7 @@ GLuint LoadTexture(const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
+	cout << "Successfully load texture " << endl;
 	return TextureID;
 }
 
