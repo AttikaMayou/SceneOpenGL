@@ -9,6 +9,9 @@
 #include <GLFW/glfw3.h>
 #include "ViewerObj.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // les repertoires d'includes sont:
 // ../libs/glfw-3.3/include			fenetrage
 // ../libs/glew-2.1.0/include		extensions OpenGL
@@ -47,6 +50,33 @@ GLuint VBO_DIFFUSE;
 GLuint IBO;
 GLuint VAO;
 Mesh m;
+GLuint g_TextureBatman;
+
+GLuint LoadTexture(const char* path) 
+{
+	int w, h, c;
+	uint8_t* data = stbi_load(path, &w, &h, &c, STBI_rgb_alpha);
+	if (!data) 
+	{
+		cout << "Failed to load texture at path : " << path << endl;
+		return 0;
+	}
+	GLuint TextureID = 0;
+	glGenTextures(1, &TextureID);
+	glBindTexture(GL_TEXTURE_2D, TextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(data);
+	cout << "Successfully load texture " << endl;
+	return TextureID;
+}
+
+void DestroyTexture(GLuint* textureID) 
+{
+	glDeleteTextures(1, textureID);
+	textureID = 0;
+}
 
 void Initialize()
 {
@@ -67,6 +97,8 @@ void Initialize()
 
 	ViewerObj viewer;
 	viewer.LoadObj(m);
+
+	g_TextureBatman = LoadTexture("batman_logo.png");
 
 	Vertex* diffuseLightVertex = new Vertex[1];
 	diffuseLightVertex[0]._position._x = 0.0;
@@ -122,7 +154,7 @@ void Shutdown()
 	glDeleteBuffers(1, &VBO_DIFFUSE);
 	glDeleteBuffers(1, &IBO);
 	glDeleteVertexArrays(1, &VAO);
-
+	DestroyTexture(&g_TextureBatman);
 }
 
 float DotProduct(Vector3 vector1, Vector3 vector2) {
@@ -193,6 +225,10 @@ void Display(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 
+	int textureUnit = 0;
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, g_TextureBatman);
+
 	Vector3 cameraPos = Vector3(0.0f, 0.0f, 2.0f);
 	Vector3 cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
 	Vector3 cameraUp = Vector3(0.0f, 1.0f, 0.0f);
@@ -205,6 +241,9 @@ void Display(GLFWwindow* window)
 	glViewport(0, 0, width, height);
 	uint32_t basicProgram = BasicShader.GetProgram();
 	glUseProgram(basicProgram);
+
+	int texture_location = glGetUniformLocation(basicProgram, "u_texture_sampler");
+	glUniform1i(texture_location, textureUnit);
 
 	float currentTime = (float)glfwGetTime();
 	int time_loc = glGetUniformLocation(basicProgram, "u_time");
