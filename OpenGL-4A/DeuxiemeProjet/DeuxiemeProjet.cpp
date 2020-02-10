@@ -39,6 +39,7 @@
 
 GLShader BasicShader;
 GLuint VBO;
+GLuint VBO_DIFFUSE;
 GLuint IBO;
 GLuint VAO;
 Mesh m;
@@ -63,6 +64,14 @@ void Initialize()
 	ViewerObj viewer;
 	viewer.LoadObj(m);
 
+	Vertex* diffuseLightVertex = new Vertex[1];
+	diffuseLightVertex[0]._position._x = 0.0;
+	diffuseLightVertex[0]._position._y = 0.0;
+	diffuseLightVertex[0]._position._z = 1.0;
+	diffuseLightVertex[0]._color._x = 1.0;
+	diffuseLightVertex[0]._color._y = 0.0;
+	diffuseLightVertex[0]._color._z = 0.0;
+
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
@@ -86,6 +95,19 @@ void Initialize()
 	glVertexAttribPointer(text_coord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _textcoords));
 	glEnableVertexAttribArray(text_coord_loc);
 
+	glGenBuffers(2, &VBO_DIFFUSE);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_DIFFUSE);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex), diffuseLightVertex, GL_STATIC_DRAW);
+
+	int diffuse_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_diffuse_position");
+	glVertexAttribPointer(diffuse_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _position));
+	glEnableVertexAttribArray(diffuse_loc);
+
+	int diffuse_color_loc = glGetAttribLocation(BasicShader.GetProgram(), "a_diffuse_color");
+	glVertexAttribPointer(diffuse_color_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, _color));
+	glEnableVertexAttribArray(diffuse_color_loc);
+
 	glBindVertexArray(0);
 #ifdef WIN32
 	wglSwapIntervalEXT(1);
@@ -97,6 +119,7 @@ void Shutdown()
 {
 	BasicShader.Destroy();
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(2, &VBO_DIFFUSE);
 	glDeleteBuffers(1, &IBO);
 	glDeleteVertexArrays(1, &VAO);
 
@@ -122,7 +145,7 @@ void Display(GLFWwindow* window)
 	int time_loc = glGetUniformLocation(basicProgram, "u_time");
 	glUniform1f(time_loc, currentTime);
 
-	float intensity = 0.1;
+	float intensity = 0.5;
 	int intensity_loc = glGetUniformLocation(basicProgram, "u_ambient_intensity");
 	glUniform1f(intensity_loc, intensity);
 

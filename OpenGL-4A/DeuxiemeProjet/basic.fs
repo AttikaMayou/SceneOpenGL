@@ -1,13 +1,25 @@
-varying vec4 v_color;
+varying vec3 v_color;
 varying vec3 v_normal;
 varying vec2 v_text_coord;
 
 varying float v_ambient_intensity;
+varying vec3 v_diffuse_light_position;
+varying vec3 v_diffuse_light_color;
+varying vec3 v_frag_pos;
 
 void main(void) {
-	gl_FragColor = v_color	* v_ambient_intensity;
+	// With ambien intensity
+	//gl_FragColor = v_color * v_ambient_intensity;
+	vec3 ambient_color = vec3(1.0, 1.0, 1.0);
+	vec3 ambient = ambient_color * v_ambient_intensity;
 
-	v_normal = normalize(v_normal);
+	vec3 newNormal = normalize(v_normal);
+	vec3 lightDirection = normalize(v_diffuse_light_color - v_frag_pos);
+
+	float diff = max(dot(newNormal, lightDirection), 0.0);
+	vec3 diffuse = diff * v_diffuse_light_color;
+
+	gl_FragColor = vec4((ambient + diffuse) * v_color, 1.0);
 }
 
 vec3 diffuse(vec3 N, vec3 L) {
