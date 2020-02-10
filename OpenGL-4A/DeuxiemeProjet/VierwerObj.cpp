@@ -8,7 +8,7 @@ using namespace std;
 
 void ViewerObj::LoadObj(Mesh &mesh) {
 
-    std::string inputfile = "suzanne.obj";
+    std::string inputfile = "suze.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
