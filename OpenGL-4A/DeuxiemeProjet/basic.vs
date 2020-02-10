@@ -20,8 +20,25 @@ varying vec3 v_diffuse_light_position;
 varying vec3 v_diffuse_light_color;
 varying vec3 v_frag_pos;
 
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
 void main(void) {
-	gl_Position = u_matrix * vec4(a_position, 1.0);
+	vec3 axisRot = vec3(1.0, 1.0, 0.0);
+	mat4 matrixRot = rotationMatrix(axisRot, 45);
+	mat4 newMatrix = u_matrix * matrixRot;
+
+	gl_Position = newMatrix * vec4(a_position, 1.0);
 	v_color = a_color;
 
 	v_normal = a_normal;
@@ -32,7 +49,7 @@ void main(void) {
 	//v_diffuse_light_color = a_diffuse_color;
 	v_diffuse_light_color = vec3(1.0, 0.0, 0.0);
 
-	vec3 newPos = (a_position.x, a_position.y, a_position.z);
+	vec3 newPos = (a_position.x, a_position.y, a_position.z - 1);
 	v_diffuse_light_position = u_matrix * vec4(newPos, 1.0);
 
 	v_frag_pos = vec3(u_matrix * vec4(a_position, 1.0));
